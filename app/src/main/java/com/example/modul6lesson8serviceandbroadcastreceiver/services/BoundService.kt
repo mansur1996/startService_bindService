@@ -37,16 +37,16 @@ class BoundService : Service() {
         return mBinder
     }
 
-    override fun onRebind(intent: Intent?) {
-        Toast.makeText(this, "Bound Service OnReBind", Toast.LENGTH_LONG).show()
-        Log.d(TAG, "onRebind: ")
-        super.onRebind(intent)
-    }
-
     override fun onUnbind(intent: Intent?): Boolean {
         Toast.makeText(this, "Bound Service OnUnbind", Toast.LENGTH_LONG).show()
         Log.d(TAG, "onUnbind: ")
         return true
+    }
+
+    override fun onRebind(intent: Intent?) {
+        Toast.makeText(this, "Bound Service OnReBind", Toast.LENGTH_LONG).show()
+        Log.d(TAG, "onRebind: ")
+        super.onRebind(intent)
     }
 
     override fun onDestroy() {

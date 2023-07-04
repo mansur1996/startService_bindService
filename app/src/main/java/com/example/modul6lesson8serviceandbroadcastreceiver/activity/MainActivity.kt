@@ -1,26 +1,22 @@
-    package com.example.modul6lesson8serviceandbroadcastreceiver.activity
+package com.example.modul6lesson8serviceandbroadcastreceiver.activity
 
+import android.app.job.JobInfo
+import android.app.job.JobScheduler
 import android.content.ComponentName
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.ServiceConnection
-import android.net.ConnectivityManager
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.IBinder
-import android.widget.Button
-import android.widget.TextView
-import com.example.modul6lesson8serviceandbroadcastreceiver.R
+import androidx.appcompat.app.AppCompatActivity
 import com.example.modul6lesson8serviceandbroadcastreceiver.databinding.ActivityMainBinding
-import com.example.modul6lesson8serviceandbroadcastreceiver.receiver.NetworkBroadcastReceiver
 import com.example.modul6lesson8serviceandbroadcastreceiver.services.BoundService
-import com.example.modul6lesson8serviceandbroadcastreceiver.services.MyIntentService
+import com.example.modul6lesson8serviceandbroadcastreceiver.services.MyJobService
 import com.example.modul6lesson8serviceandbroadcastreceiver.services.StartedService
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
-    var boundService : BoundService? = null
+    var boundService: BoundService? = null
     var isBound = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,11 +24,21 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val jobScheduler = getSystemService(JOB_SCHEDULER_SERVICE) as JobScheduler
+
+        val jobInfo = JobInfo.Builder(1, ComponentName(this, MyJobService::class.java))
+
+        val job = jobInfo.setRequiresCharging(true).setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+            .setOverrideDeadline(15 * 1000)
+            .build()
+
+        jobScheduler.schedule(job)
+
         initViews()
     }
 
 
-    private fun initViews(){
+    private fun initViews() {
 
         binding.btnStartStarted.setOnClickListener {
             startStartedService()
@@ -58,32 +64,32 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun startStartedService(){
+    private fun startStartedService() {
         val intent = Intent(this, StartedService::class.java)
         startService(intent)
     }
 
-    private fun stopStartedService(){
+    private fun stopStartedService() {
         val intent = Intent(this, StartedService::class.java)
         stopService(intent)
     }
 
-    private fun startBoundService(){
+    private fun startBoundService() {
         val intent = Intent(this, BoundService::class.java)
         bindService(intent, mServiceConnection, BIND_AUTO_CREATE)
     }
 
-    private fun stopBoundService(){
-        if(isBound){
+    private fun stopBoundService() {
+        if (isBound) {
             unbindService(mServiceConnection)
             isBound = false
         }
     }
 
-    private val mServiceConnection : ServiceConnection = object : ServiceConnection{
+    private val mServiceConnection: ServiceConnection = object : ServiceConnection {
 
-        override fun onServiceConnected(name : ComponentName, service: IBinder) {
-            val myBinder : BoundService.MyBinder = service as BoundService.MyBinder
+        override fun onServiceConnected(name: ComponentName, service: IBinder) {
+            val myBinder: BoundService.MyBinder = service as BoundService.MyBinder
             boundService = myBinder.getBoundService()
             isBound = true
         }
